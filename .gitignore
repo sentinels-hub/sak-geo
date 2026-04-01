@@ -1,3 +1,26 @@
-/node_modules
+# dependencies
+node_modules
+
+# build
+dist
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+*.log
+
+# misc
 .DS_Store
-/dist
+*.tsbuildinfo
+.eslintcache
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+.nova

@@ -1,0 +1,14 @@
+services:
+  sak-geo:
+    build:
+      context: .
+      args:
+        VITE_PUBLIC_MAPBOX_TOKEN: ${VITE_PUBLIC_MAPBOX_TOKEN}
+    ports:
+      - "${SAK_GEO_PORT:-8080}:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

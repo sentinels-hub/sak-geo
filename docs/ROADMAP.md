@@ -1,155 +1,102 @@
-# SAK-Geo Roadmap
+# SAK-Geo Roadmap — Redefined
 
-Built on a clean fork of [geojson.io/next](https://github.com/mapbox/geojson.io) (Placemark heritage).
-Each version is a deployable milestone. No version ships without tests for its scope.
+SAK-Geo is a **Core extension**, not an island.
+All data comes from Sentinels Core API. Geo is a CONSUMER, not a source of truth.
+NO own backend, NO Prisma, NO Fastify. Pure SPA consuming Core REST API.
 
----
-
-## v0.1.0 — Clean Base (CURRENT)
-
-**Status: DONE**
-
-The geojson.io GeoJSON editor running standalone with SAK-Geo branding.
-
-- [x] Fork extraction: `/next` → root
-- [x] SAK-Geo branding (index.html, package.json, README)
-- [x] Vite config: `base: '/'`, output to `dist/`
-- [x] Remove Mapbox analytics, CNAME, CI workflows
-- [x] Dockerfile (multi-stage node+nginx)
-- [x] docker-compose.yml with health check
-- [x] nginx.conf (gzip, SPA fallback, /health)
-- [x] License compliance (ISC + Placemark MIT attribution)
-- [x] Build verified: 20.72s, 9.2MB
-
-**What works:** Full GeoJSON editor — draw, edit, import/export 20+ formats, search, multi-select, bulk edit.
+```
+User --> SAK-Geo (SPA) --> Sentinels Core API --> Database
+              |                     |
+              |                     +-- Projects, Sites, Placements
+              |                     +-- Catalog, Definitions
+              |                     +-- Scopes, ScopeLines
+              |                     +-- DeploymentUnits, RuntimeBindings
+              |                     +-- Commissioning
+              |
+              +-- Mapbox GL JS (tiles, geocoding)
+```
 
 ---
 
-## v0.2.0 — API Foundation
+## v0.1.0 — Clean Base (Wave 0) DONE
 
-**Goal:** Fastify + Prisma backend for project persistence. Replace MemPersistence with ApiPersistence.
-
-- [ ] `api/` directory: Fastify 5 + Prisma + PostgreSQL + PostGIS
-- [ ] Core Prisma models: Project, Feature, DeviceFamily, DeviceCatalogEntry
-- [ ] API routes: health, projects CRUD, features CRUD
-- [ ] ApiPersistence adapter (extends IPersistence)
-- [ ] Project list page (home route)
-- [ ] Project editor route (`/projects/:id`)
-- [ ] Docker: add `sak-db` (PostGIS) + `sak-api` services
-- [ ] Zod validation on all endpoints
-- [ ] API tests with Vitest
+GeoJSON editor (geojson.io/next fork) with SAK-Geo branding.
+Pure client-side, no backend. Docker+nginx deployment.
 
 ---
 
-## v0.3.0 — Device Catalog & Placement
+## v0.2.0 — Core Integration Foundation (Wave 1) DONE
 
-**Goal:** IoT device taxonomy and map placement UX.
+Geo talks to Core API. Projects, sites, placements, catalog.
 
-- [ ] Device families (sensors, cameras, gateways, actuators, etc.)
-- [ ] Device catalog with models, brands, icons, default properties
-- [ ] Device placement handler (click-to-place on map)
-- [ ] Device info panel (properties editor)
-- [ ] Device filter bar
-- [ ] Device stats bar (counts by family)
-- [ ] Custom map markers per device type
-- [ ] Import/export devices as GeoJSON features with typed properties
-
----
-
-## v0.4.0 — Zones & Compliance
-
-**Goal:** Zone management and basic compliance rules.
-
-- [ ] Zone editor (polygon/circle zones on map)
-- [ ] Zone rules engine (max devices, required types, antenna separation)
-- [ ] Compliance checker (RF emissions, ATEX zones, GDPR cameras)
-- [ ] Zone visualization (color-coded overlays)
-- [ ] API: zones CRUD, compliance check endpoint
+- [x] Core API client (`app/lib/core-api/`)
+- [x] JWT auth against Core API (`POST /api/v1/auth/token/`)
+- [x] Auth gate with token persistence + auto-refresh
+- [x] Project picker (`GET /api/v1/projects/projects/`)
+- [x] Site loader → GeoJSON (`GET /api/v1/projects/sites/`)
+- [x] Placement loader → GeoJSON Points (`GET /api/v1/projects/placements/`)
+- [x] Catalog sidebar (`GET /api/v1/catalog/items/`, `/definitions/definitions/`)
+- [x] Save back: sites + placements (`PATCH`)
+- [x] Config: `VITE_CORE_API_URL`
+- [x] Demo mode preserved (`/demo` route)
+- [x] SAK-Geo menu bar with user, logout, catalog, projects
 
 ---
 
-## v0.5.0 — Floor Plans & Indoor
+## v0.3.0 — Device Placement on Map (Wave 2)
 
-**Goal:** Indoor device placement with floor plan overlays.
+Place devices from Core catalog onto the map.
 
-- [ ] Floor plan upload and georeferencing (corner pinning)
-- [ ] Floor plan overlay on map (opacity, lock, visibility)
-- [ ] Indoor/outdoor toggle
+- [ ] Device placement mode: select from catalog → click map → POST placement
+- [ ] Custom device markers per category (sensor, gateway, controller, etc.)
+- [ ] Device info popup: click device → show specs from Definition
+- [ ] Scope integration: show ScopeLines, track planned vs placed
+- [ ] Drag-to-move placement → PATCH coordinates
+- [ ] Delete placement from map → DELETE to Core API
+- [ ] Visual: placed vs unplaced count per device type
+
+---
+
+## v0.4.0 — Coverage & Spatial Intelligence (Wave 3a)
+
+- [ ] Client-side FSPL calculator (gateway coverage radius)
+- [ ] Gateway range overlay circles on map
+- [ ] Device-in-range query (Turf.js distance calculations)
+- [ ] Gateway↔device connectivity lines
+- [ ] Zone editor (draw compliance zones)
+- [ ] Zone rules (max devices, required types, min separation)
+
+---
+
+## v0.5.0 — Floor Plans & Advanced Spatial (Wave 3b)
+
+- [ ] Floor plan upload + georeferencing (corner pinning)
+- [ ] Floor plan overlay on map
 - [ ] Multi-floor support
-- [ ] API: floor plans CRUD
+- [ ] CloudRF API integration (optional, for accurate RF propagation)
 
 ---
 
-## v0.6.0 — Coverage Analysis
+## v0.6.0 — Pre-Provisioning Trigger (Wave 4)
 
-**Goal:** RF propagation and coverage visualization.
-
-- [ ] Client-side FSPL (free-space path loss) calculator
-- [ ] CloudRF integration for server-side RF propagation
-- [ ] Python sidecar for GeoTIFF → GeoJSON processing
-- [ ] Coverage overlay visualization (signal quality zones)
-- [ ] Coverage cache with SHA-256 hash invalidation
-- [ ] API: coverage endpoints + pg-boss batch worker
+- [ ] "Provision" button after devices are placed
+- [ ] POST /api/v1/operations/deployment-units/bulk-provision/
+- [ ] Provisioning progress + results display
+- [ ] Device status badges (virtual/provisioned/active)
 
 ---
 
-## v0.7.0 — Field Operations
+## v0.7.0 — Field Operations View (Wave 5)
 
-**Goal:** Surveys, commissioning, deployment scheduling.
-
-- [ ] Survey templates and instances
-- [ ] Commissioning records with checklists
-- [ ] Deployment schedule with calendar view
-- [ ] Work orders with optimized routes
-- [ ] API: surveys, commissioning, schedule, work-orders CRUD
+- [ ] Commissioning overlay (color-coded by status)
+- [ ] Field deployment routes on map
+- [ ] Technician assignment visualization
+- [ ] Click device → commissioning status + evidence from Core API
+- [ ] Live status polling
 
 ---
 
-## v0.8.0 — Intelligence Layer
+## Version Policy
 
-**Goal:** Cable routing, interference detection, predictive analytics.
-
-- [ ] Cable route editor (device-to-device routing)
-- [ ] Route optimizer (shortest path, obstacle avoidance)
-- [ ] Interference detector (co-channel, adjacent-channel)
-- [ ] BOM generator (bill of materials from placed devices)
-- [ ] Measurement tools (distance, area, elevation profile)
-- [ ] Terrain and 3D visualization
-
----
-
-## v0.9.0 — Collaboration
-
-**Goal:** Multi-user features, sharing, comments.
-
-- [ ] Annotations (photo, note, voice on map)
-- [ ] Project snapshots (version history)
-- [ ] Shared links with permissions
-- [ ] Comments on features
-- [ ] Real-time sync (WebSocket/SSE)
-
----
-
-## v1.0.0 — Enterprise
-
-**Goal:** Multi-tenant, auth, admin, portfolio.
-
-- [ ] JWT + OIDC authentication
-- [ ] Multi-tenant with organization/team model
-- [ ] Admin dashboard (users, orgs, settings, audit log)
-- [ ] Portfolio dashboard (cross-project analytics)
-- [ ] Asset lifecycle management
-- [ ] Plugin system
-- [ ] Webhook system with HMAC-SHA256 signing
-- [ ] IoT platform integrations (ThingsBoard, ChirpStack, MQTT)
-
----
-
-## Principles
-
-1. **Each version is deployable.** No partial features ship.
-2. **Tests before features.** Every version includes tests for its scope.
-3. **API-first.** Backend routes are designed and tested before frontend integration.
-4. **Progressive enhancement.** geojson.io works standalone at v0.1; each version adds IoT capability.
-5. **No dead code.** Features are implemented when they ship, not scaffolded early.
-6. **Clean imports.** Each component knows its dependencies. No circular imports.
+Stay at 0.x.x until the FULL end-to-end flow works.
+v1.0.0 is reserved for when a real client deployment runs through the complete pipeline.

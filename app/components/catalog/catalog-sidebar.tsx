@@ -4,13 +4,14 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { listCatalogItems, listDefinitions, CATEGORY_CONFIG } from 'app/lib/core-api';
 import type { CoreCatalogItem, CoreDefinition } from 'app/lib/core-api/types';
 import {
   catalogSidebarOpenAtom,
   catalogCategoryFilterAtom
 } from 'state/core';
+import { placementModeAtom } from 'app/components/device/device-placement-handler';
 
 export function CatalogSidebar() {
   const [isOpen, setIsOpen] = useAtom(catalogSidebarOpenAtom);
@@ -163,12 +164,7 @@ export function CatalogSidebar() {
                     {itemDefs.length > 0 && (
                       <div className="mt-1 flex gap-1 flex-wrap">
                         {itemDefs.map((def) => (
-                          <span
-                            key={def.id}
-                            className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"
-                          >
-                            {def.name}
-                          </span>
+                          <PlaceButton key={def.id} definition={def} />
                         ))}
                       </div>
                     )}
@@ -179,5 +175,27 @@ export function CatalogSidebar() {
           })}
       </div>
     </div>
+  );
+}
+
+/**
+ * Place button — activates placement mode for a specific definition.
+ */
+function PlaceButton({ definition }: { definition: CoreDefinition }) {
+  const setPlacementMode = useSetAtom(placementModeAtom);
+  const setIsOpen = useSetAtom(catalogSidebarOpenAtom);
+
+  return (
+    <button
+      onClick={() => {
+        setPlacementMode(definition);
+        setIsOpen(false); // Close sidebar when entering placement mode
+      }}
+      className="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100
+                 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+      title={`Place ${definition.name} on map`}
+    >
+      {definition.name}
+    </button>
   );
 }

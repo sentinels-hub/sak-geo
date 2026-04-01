@@ -1,6 +1,6 @@
 {
   "name": "sak-geo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "SAK-Geo: Device placement map tool for the Sentinels ecosystem. Based on geojson.io by Mapbox / Placemark.",
   "author": "Sentinels <dev@sentinels.pro>",
   "license": "ISC",
